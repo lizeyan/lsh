@@ -1,22 +1,30 @@
-import click
-from lsh import LSH, BasicE2LSH
 from pathlib import Path
+
+import click
 import numpy as np
-import seaborn as sns
 from loguru import logger
+
+from config import n_dims, n_test_samples, n_ground_truth, n_train_samples
+from lsh import LSH, BasicE2LSH
 
 
 data_base_path = Path("./outputs")
-train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32)
-test_data = np.memmap(data_base_path / 'test_arr', mode='r', dtype=np.float32)
-ground_truth = np.memmap(data_base_path / 'ground_truth', mode='r', dtype=np.float32)
+train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32, shape=(n_train_samples, n_dims))
+test_data = np.memmap(data_base_path / 'test_arr', mode='r', dtype=np.float32, shape=(n_test_samples, n_dims))
+ground_truth = np.memmap(
+    data_base_path / 'ground_truth', mode='r', dtype=np.int32, shape=(n_test_samples, n_ground_truth)
+)
 
 
 def lsh_evaluation(name, lsh: LSH):
+    logger.info(f"{name}")
     logger.info(f"start add entries, train data shape: {np.shape(train_data)}")
-    for q in train_data:
-        lsh.add(q)
-    logger.info(f"evaluate")
+    lsh.add_batch(train_data[:1000])
+    logger.info(f"start evaluate")
+    for idx, test_sample in enumerate(test_data):
+        candidates = lsh.query(test_sample)
+        print(len(candidates))
+
 
 
 @click.command()

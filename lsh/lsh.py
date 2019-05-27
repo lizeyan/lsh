@@ -3,7 +3,10 @@ class LSH:
         pass
 
     def add(self, q):
-        raise NotImplementedError()
+        return self.add_batch([q])
 
     def query(self, q):
+        raise NotImplementedError()
+
+    def add_batch(self, q_list):
         raise NotImplementedError()
