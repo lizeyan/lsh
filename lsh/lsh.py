@@ -6,10 +6,10 @@ class LSH:
     def __init__(self):
         pass
 
-    def add(self, q):
+    def add(self, q, **kwargs):
         return self.add_batch([q])
 
-    def query(self, q):
+    def query(self, q, **kwargs):
         raise NotImplementedError()
 
     def add_batch(self, q_list):

@@ -31,7 +31,7 @@ class BasicE2LSH(LSH):
     def add_batch(self, q_list):
         list(map(lambda hash_table: hash_table.add_batch(q_list), self.hash_tables))
 
-    def __init__(self, n_dims: int, n_hash_table: int = 20, n_compounds: int = 20, w: float = 1.):
+    def __init__(self, n_dims: int, n_hash_table: int = 1, n_compounds: int = 1, w: float = 1.):
         super().__init__()
         self.n_hash_table = n_hash_table
         self.n_compounds = n_compounds

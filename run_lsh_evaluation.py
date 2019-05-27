@@ -6,6 +6,7 @@ from loguru import logger
 
 from config import n_dims, n_test_samples, n_train_samples
 from lsh import LSH, BasicE2LSH
+from lsh.multi_probe_lsh import MultiProbeE2LSH
 
 data_base_path = Path("./outputs")
 train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32, shape=(n_train_samples, n_dims))
@@ -27,7 +28,7 @@ def e2_ratio(q, labels, preds):
     return np.mean(e2(q, preds) / e2(q, labels))
 
 
-def lsh_evaluation(lsh: LSH, max_n_ground_truth=1):
+def lsh_evaluation(lsh: LSH, **kwargs):
     handler_id = logger.add(data_base_path / 'logs' / f'{lsh}.log'.replace(' ', '_'))
     logger.info(lsh)
     logger.info(f"start add entries, train data shape: {np.shape(train_data)}")
@@ -35,8 +36,9 @@ def lsh_evaluation(lsh: LSH, max_n_ground_truth=1):
     logger.info(f"start evaluate")
     error_ratio_list = []
     for idx, test_sample in enumerate(test_data):
-        candidates = lsh.query(test_sample)
+        candidates = lsh.query(test_sample, **kwargs)
         n_candidates = np.size(candidates, 0)
+        # TODO ?
         if n_candidates <= 0:
             continue
         labels = train_data[ground_truth[idx, :n_candidates]]
@@ -47,7 +49,8 @@ def lsh_evaluation(lsh: LSH, max_n_ground_truth=1):
 
 @click.command()
 def main():
-    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.))
+    # lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.))
+    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.), t=1)
 
 
 if __name__ == '__main__':
