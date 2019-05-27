@@ -2,7 +2,7 @@ from typing import Callable, List, Dict
 import numpy as np
 
 from lsh import LSH
-from lsh.hash_family import CompoundE2Family
+from lsh.hash_family import E2Family
 
 
 class HashTable:
@@ -36,16 +36,15 @@ class BasicE2LSH(LSH):
         self.n_hash_table = n_hash_table
         self.n_compounds = n_compounds
         self.w = w
-        self.hash_family = CompoundE2Family(n_dims=n_dims, k=n_compounds, w=w)
+        self.hash_family = E2Family(n_dims=n_dims, k=n_compounds, w=w)
         self.hash_tables = [HashTable(self.hash_family.sample()) for _ in range(self.n_hash_table)]
 
     def query(self, q):
         """
         :return:
         """
-        rets = [hash_table.query(q) for hash_table in self.hash_tables]
-        results = np.concatenate(rets)
+        results = list(filter(lambda x: len(x) > 0, [hash_table.query(q) for hash_table in self.hash_tables]))
         if len(results) > 0:
-            return np.unique(results, axis=0)
+            return np.unique(np.concatenate(results), axis=0)
         else:
             return np.asarray([])
