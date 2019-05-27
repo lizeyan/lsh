@@ -2,8 +2,39 @@
 \usepackage{xcolor}
 \usetheme{Rochester}
 \usecolortheme{beaver}
+\AtBeginSection[]
+{
+  \begin{frame}
+    \frametitle{Table of Contents}
+    \tableofcontents[
+    sectionstyle=show/shaded,
+    subsectionstyle=show/show/shaded,
+    subsubsectionstyle=show/show/show/shaded
+    ]
+  \end{frame}
+}
+% Frame title count
+\newcounter{cont_frame}
+\makeatletter
+\setlength{\parindent}{0pt}
+\setbeamertemplate{frametitle continuation}{%
+    \setcounter{cont_frame}{\beamer@endpageofframe}%
+    \addtocounter{cont_frame}{1}%
+    \addtocounter{cont_frame}{-\beamer@startpageofframe}%
+    (\insertcontinuationcount/\arabic{cont_frame})%
+}
+\makeatother
+% Frame number in right down corner
+\setbeamertemplate{sidebar right}{}
+\setbeamertemplate{footline}{%
+\hfill\usebeamertemplate***{navigation symbols}
+\hspace{1cm}\insertframenumber{}/\inserttotalframenumber}
+
 
 \title{LSH}
 \begin{document}
 	\maketitle
+	\section{Review of LSH Search Scheme}
+	\input{multi_probe}
+	\input{dynamic_collison_counting}
 \end{document}
