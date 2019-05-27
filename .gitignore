@@ -2,7 +2,7 @@
 .idea/
 __pycache__/
 outputs/
-presentation.pdf
+presentation/presentation.pdf
 .ipynb_checkpoints/
 
 ### Windows template
