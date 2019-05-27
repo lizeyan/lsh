@@ -2,13 +2,16 @@
 \begin{frame}
 \frametitle{The Idea of Multi-Probe LSH}
 	Since similar objects are expected to hashed into the same or adjacent buckets with high probability, probing one hash table with an appropriate probe sequence will reduce the number of hash tables while achieving similar recall.
+
 \begin{table}
-\begin{tabular}{cc}
+\begin{tabular}{|c|c|}
 \hline
-  Basic LSH& $g(q)=(h_1(q), h_2(q), ..., h_M(q))$ \\ \hline
-  Multi-Probe LSH& $g(q){+}\Delta^{(i)}, i{=}1,2,...,T$, $\Delta^{(i)}{=}(\delta_1^{(i)}, \delta_2^{(i)}, ..., \delta_M^{(i)})$ \\ \hline
+  \textbf{Scheme} & \textbf{Query}\\ \hline
+  Basic& $g(q)=(h_1(q), h_2(q), ..., h_M(q))$ \\ \hline
+  Multi-Probe& $g(q){+}\Delta^{(i)}, i{=}1,2,...,T$, $\Delta^{(i)}{=}(\delta_1^{(i)}, \delta_2^{(i)}, ..., \delta_M^{(i)})$ \\ \hline
 \end{tabular}
 \end{table}
+
 \end{frame}
 
 \begin{frame}
@@ -16,5 +19,9 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Step-Wise Probing Sequence}
+	\frametitle{Query-Directed Probing Sequence}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Optimized Probing Sequence Construction}
 \end{frame}
