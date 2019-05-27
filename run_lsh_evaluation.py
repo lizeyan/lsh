@@ -19,7 +19,7 @@ ground_truth = np.memmap(
 def lsh_evaluation(name, lsh: LSH):
     logger.info(f"{name}")
     logger.info(f"start add entries, train data shape: {np.shape(train_data)}")
-    lsh.add_batch(train_data[:1000])
+    lsh.add_batch(train_data[:60000])
     logger.info(f"start evaluate")
     for idx, test_sample in enumerate(test_data):
         candidates = lsh.query(test_sample)
@@ -29,7 +29,7 @@ def lsh_evaluation(name, lsh: LSH):
 
 @click.command()
 def main():
-    lsh_evaluation("BasicE2LSH", BasicE2LSH(n_dims=50, n_hash_table=20, n_compounds=20, w=4.))
+    lsh_evaluation("BasicE2LSH", BasicE2LSH(n_dims=50, n_hash_table=20, n_compounds=20, w=10.))
 
 
 if __name__ == '__main__':

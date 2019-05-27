@@ -10,12 +10,11 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, ToTensor
 from torchvision.datasets import MNIST
 
-from config import n_dims, n_ground_truth, n_test_samples, n_train_samples
+from config import n_dims, n_test_samples, n_train_samples
 
 # In[2]:
-dataset_name='MNIST'
-output_path='outputs'
-
+dataset_name = 'MNIST'
+output_path = 'outputs'
 
 # In[3]:
 
@@ -27,11 +26,10 @@ original_train_data = dataset_class(
 )
 train_dataset_length = len(original_train_data)
 
-
 # In[4]:
 
 
-loader = DataLoader(original_train_data, batch_size=4096*16, num_workers=2, shuffle=False)
+loader = DataLoader(original_train_data, batch_size=4096 * 16, num_workers=2, shuffle=False)
 mean = np.zeros((28, 28), dtype=np.float32)
 for images, _ in loader:
     images = np.squeeze(images.numpy())
@@ -50,14 +48,12 @@ var /= train_dataset_length
 total_std = np.sqrt(np.mean(var))
 logger.debug(f"train dataset standard deviation: {total_std}")
 
-
 # In[5]:
 
 
-selected_positions = np.unravel_index(np.argsort(var, axis=None)[-1:-n_dims-1:-1], np.shape(var))
+selected_positions = np.unravel_index(np.argsort(var, axis=None)[-1:-n_dims - 1:-1], np.shape(var))
 logger.debug(f"selected positions: {selected_positions}")
 del var
-
 
 # In[6]:
 
@@ -71,14 +67,13 @@ fp[:] = train_arr[:]
 del fp
 del original_train_dataset_arr
 
-
 # In[7]:
 
 
 original_test_data = dataset_class(
     f"{output_path}/{dataset_name}_data", download=True, transform=transform, train=False
 )
-loader = DataLoader(original_test_data, batch_size=4096*16, num_workers=2, shuffle=False)
+loader = DataLoader(original_test_data, batch_size=4096 * 16, num_workers=2, shuffle=False)
 original_test_dataset_arr = []
 for images, _ in loader:
     images = np.squeeze(images.numpy())
@@ -94,21 +89,15 @@ fp[:] = test_arr[:]
 del fp
 del original_test_dataset_arr
 
-
 # In[8]:
 
 
 distances = np.sum(np.square(np.expand_dims(test_arr, 1) - np.expand_dims(train_arr, 0)), axis=-1)
-ground_truth = np.argsort(distances, axis=-1)[:, :n_ground_truth]
+ground_truth = np.argsort(distances, axis=-1)
 ground_truth = ground_truth.astype(np.int32)
 logger.debug(f'ground truth shape: {np.shape(ground_truth)}')
 fp = np.memmap(f"{output_path}/ground_truth", dtype=np.int32, mode='w+', shape=np.shape(ground_truth))
 fp[:] = ground_truth[:]
 del fp
 
-
 # In[ ]:
-
-
-
-

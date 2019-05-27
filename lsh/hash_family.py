@@ -19,9 +19,9 @@ class E2Family:
     def _hash_generator(self, a):
         def _hash(q):
             # assert np.shape(q) == np.shape(a)[-1:], f'query should be in shape {np.shape(a)[-1:]}'
-            _ret = np.floor_divide(np.tensordot(q, a, axes=[-1, -1]), self.w)
+            _ret = np.floor_divide(np.tensordot(q, a, axes=[-1, -1]), self.w).astype(np.int32)
             if np.ndim(q) == 1:
-                return tuple(_ret.astype(np.int32))
+                return tuple(_ret)
             elif np.ndim(q) == 2:
                 return list(map(tuple, _ret))
             else:

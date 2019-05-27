@@ -43,5 +43,9 @@ class BasicE2LSH(LSH):
         """
         :return:
         """
-        results = np.concatenate([hash_table.query(q) for hash_table in self.hash_tables])
-        return np.unique(results, axis=0)
+        rets = [hash_table.query(q) for hash_table in self.hash_tables]
+        results = np.concatenate(rets)
+        if len(results) > 0:
+            return np.unique(results, axis=0)
+        else:
+            return np.asarray([])
