@@ -10,7 +10,7 @@ from config import n_dims, n_test_samples, n_train_samples
 from lsh import LSH, BasicE2LSH
 from lsh.multi_probe_lsh import MultiProbeE2LSH
 from utility import Timer
-from pathos.parallel import ParallelPool
+
 
 data_base_path = Path("./outputs")
 train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32, shape=(n_train_samples, n_dims))
@@ -74,9 +74,9 @@ def lsh_evaluation(lsh: LSH, **kwargs):
             lsh.add_batch(train_data[:60000])
         logger.info(f"build hash table cost: {build_timer.elapsed_time:.4f}s")
         logger.info(f"start evaluate")
-        error_ratio_list = []
-        recall_list = []
         with Timer() as search_timer:
+            error_ratio_list = []
+            recall_list = []
             for idx, test_sample in enumerate(test_data):
                 candidates = lsh.query(test_sample, **kwargs)
                 if not len(candidates):
@@ -84,8 +84,8 @@ def lsh_evaluation(lsh: LSH, **kwargs):
                 labels = train_data[ground_truth[idx, :]]
                 error_ratio_list.append(get_e2_ratio(test_sample, labels, candidates))
                 recall_list.append(get_recall(test_sample, labels, candidates, max_k=5))
-    error_ratio = np.mean(error_ratio_list)
-    recall = np.mean(recall_list)
+            error_ratio = np.mean(error_ratio_list)
+            recall = np.mean(recall_list)
     ret = {
         'total_time:': total_timer.elapsed_time,
         'error_ratio': error_ratio,
@@ -102,17 +102,24 @@ def lsh_evaluation(lsh: LSH, **kwargs):
 def main():
     result_list = []
     try:
-        # n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
-        n_hash_table_list = [1, 2]
+        n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
         n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
         w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
         t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-        for params in product(n_hash_table_list, n_compounds_list, w_list):
-            result_list.append(lsh_evaluation(BasicE2LSH(
-                n_dims=n_dims, n_hash_table=params[0], n_compounds=params[1], w=params[2])))
-        for params in product(n_hash_table_list, n_compounds_list, w_list, t_list):
-            result_list.append(lsh_evaluation(MultiProbeE2LSH(
-                n_dims=n_dims, n_hash_table=params[0], n_compounds=params[1], w=params[2]), t=params[3]))
+        # n_hash_table_list = [1, 2, ]
+        # n_compounds_list = [1, ]
+        # w_list = [0.5, 1.0, ]
+        # t_list = [1, 2, 4, ]
+        result_list.extend(list(map(
+            lambda params: lsh_evaluation(BasicE2LSH(
+                n_dims=n_dims, n_hash_table=params[0], n_compounds=params[1], w=params[2])),
+            product(n_hash_table_list, n_compounds_list, w_list)
+        )))
+        result_list.extend(list(map(
+            lambda params: lsh_evaluation(MultiProbeE2LSH(
+                n_dims=n_dims, n_hash_table=params[0], n_compounds=params[1], w=params[2]), t=params[3]),
+            product(n_hash_table_list, n_compounds_list, w_list, t_list)
+        )))
     except KeyboardInterrupt as e:
         logger.error(e)
     finally:
