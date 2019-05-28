@@ -8,6 +8,7 @@ from config import n_dims, n_test_samples, n_train_samples
 from lsh import LSH, BasicE2LSH
 from lsh.multi_probe_lsh import MultiProbeE2LSH
 from utility import Timer
+from concurrent.futures import ProcessPoolExecutor
 
 data_base_path = Path("./outputs")
 train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32, shape=(n_train_samples, n_dims))
@@ -103,4 +104,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with Timer() as main_experiment_timer:
+        main()
+    logger.info(f"experiment finished, cost {main_experiment_timer.elapsed_time}")
