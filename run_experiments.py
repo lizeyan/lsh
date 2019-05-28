@@ -26,14 +26,16 @@ def worker_basic_lsh(params):
     while not available_server_set:
         time.sleep(1)
     server = available_server_set.pop()
-    cmd = f'ssh {server} \"cd {base_path}; source ~/.zshrc ' \
+    cmd = f'ssh {server} \"cd {base_path}; source ~/.zshrc && ' \
         f'python3 {base_path}/run_basic_lsh_evaluation.py ' \
         f'--n-hash-table {n_hash_table} ' \
         f'--n-compounds {n_compounds} ' \
         f'--w {w} ' \
         f'\"'
     logger.debug(f"command: {cmd}")
-    ret = eval(subprocess.check_output(cmd, shell=True))
+    output = subprocess.check_output(cmd, shell=True)
+    # logger.debug(output)
+    ret = eval(output)
     # ret = {}
     available_server_set.add(server)
     logger.debug(f"ret: {ret}")

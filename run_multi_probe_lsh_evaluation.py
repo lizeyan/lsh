@@ -21,7 +21,7 @@ def main(n_hash_table, n_compounds, w, t):
     ret['w'] = w
     ret['t'] = t
     ret['algorithm'] = 'MultiProbeLSH'
-    print(json.dumps(ret))
+    print(ret)
 
 
 if __name__ == '__main__':

@@ -104,7 +104,7 @@ def main(n_hash_table, n_compounds, w):
     ret['n_compounds'] = n_compounds
     ret['w'] = w
     ret['algorithm'] = 'BasicLSH'
-    print(json.dumps(ret))
+    print(ret)
 
 
 # def main():
