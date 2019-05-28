@@ -5,6 +5,7 @@ from loguru import logger
 from lsh.hash_family import E2Family
 import random
 import networkx as nx
+from lsh.lsh import LSH
 
 class node(object):
     def __init__(self,obj, father, lchild=None, rchild=None, isleaf=False):
@@ -39,6 +40,8 @@ class node(object):
                 else:
                     newnode=node('1', self, self.lchild)
                     self.lchild.father=newnode
+                    if not (self.rchild is None):
+                        raise ValueError("conflict")
                     self.rchild=newnode
                     self.lchild=node('0', self)
                     new=True
@@ -58,6 +61,8 @@ class node(object):
     def add_lchild(self, Node):
         if self.isleaf:
             raise ValueError("Leaf node cannot add child")
+        if not( self.lchild is None):
+            raise ValueError('lchild already exist')
         self.lchild=Node
 
     def add_rchild(self, Node):
@@ -81,7 +86,7 @@ class Btree(object):
             Node.add_lchild(node([hashcode, [term], depth], Node, isleaf=True))
         else:
             #print (Node.lchild.isleaf)
-            logger.info(f"The leaf has existed and the number if {len(Node.lchild.obj[1])}")
+            #logger.info(f"The leaf has existed and the number if {len(Node.lchild.obj[1])}")
             Node.lchild.obj[1].append(term)
 
     def delete(self, hashcode, term):
@@ -147,7 +152,8 @@ class Btree(object):
             if Node is None:
                 return
             if not(Node.lchild is None) and Node.lchild.isleaf:
-                res.add(Node.lchild)
+                res.append(Node.lchild)
+                descen(Node.rchild, res)
                 return
             descen(Node.lchild, res)
             descen(Node.rchild, res)
@@ -156,7 +162,7 @@ class Btree(object):
 class LSHTree(object):
     def __init__(self, km):
         self.km=km
-        self.generator=E2Family(50, k=km, w=1.0)
+        self.generator=E2Family(50, k=self.km, w=30.0)
         self.func=self.generate_hashfunc()
         self.tree=Btree()
 
@@ -165,7 +171,9 @@ class LSHTree(object):
         return self.tree.descent(hashcode)
 
     def add_batch(self, q_list):
-        vec=[self.list2vec(item) for item in q_list]
+        vec=np.array([self.list2vec(item) for item in q_list])
+        q_list=np.array(q_list)[np.argsort(vec)]
+        vec=np.sort(vec)
         for item, index in zip(vec, range(len(vec))):
             self._add_one(item, q_list[index])
 
@@ -198,7 +206,7 @@ class LSHTree(object):
         return self.tree.descendants(Node, res)
         
 
-class LSHForest(object):
+class LSHForest(LSH):
     def __init__(self, l, km):
         self.km=km ##the maximum length
         self.l=l ## the number of trees
@@ -214,12 +222,12 @@ class LSHForest(object):
         [tree.delete_one(image) for tree in self.forest]
 
 
-    def query(self, q, c=2, m=100):  # query from hash table
+    def query(self, q, c=1, m=20):  # query from hash table
         descend=[tree.descend(q) for tree in self.forest]
-        res=set([])
+        res=[]
 
         x=max([item[1] for item in descend])
-        logger.info(f"The value of x is {x}")
+        #logger.info(f"The value of x is {x}")
         while (x>0 and (len(res)<c*self.l or len(res)<m)):
             for i in range(self.l):
                 if descend[i][1]==x:
@@ -230,6 +238,15 @@ class LSHForest(object):
         res_=[]
         for Node in res:
             res_.extend(Node.obj[1])
+        res_=np.array(res_)
         logger.info(f"FINISH QUERY, the number of candidate is {len(res_)}")
+        index=res_-np.reshape(q, [1, -1])
+        index=index**2
+        index=index.sum(-1)
+        
+        #print (np.sort(index))
+        index=np.argsort(index)[:m]
+        res_=res_[index]
+        #print (res_, q)
         return res_
 
