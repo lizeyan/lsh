@@ -1,9 +1,10 @@
 import copy
+from heapq import heappush, heappop
+
+import numpy as np
+from loguru import logger
 
 from lsh import BasicE2LSH, HashTable
-import numpy as np
-from heapq import heappush, heappop
-from loguru import logger
 
 
 class MultiProbeE2LSH(BasicE2LSH):
