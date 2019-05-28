@@ -11,14 +11,14 @@ server_list = [f'cpu{i}' for i in range(1, 11)]
 available_server_set = set(server_list)
 
 
-n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
-n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
-w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
-t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
-# n_hash_table_list = [64, ]
-# n_compounds_list = [1, ]
-# w_list = [0.5, 1.0, ]
-# t_list = [128, ]
+# n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+# n_compounds_list = [4, 8, 16, 32, 64]
+# w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+# t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+n_hash_table_list = [1, ]
+n_compounds_list = [20, ]
+w_list = [10, ]
+t_list = [10, ]
 
 
 def work(cmd):
@@ -45,7 +45,7 @@ def worker_basic_lsh(params):
         f'--n-compounds {n_compounds} ' \
         f'--w {w} ' \
         f'\"'
-    work(cmd)
+    return work(cmd)
 
 
 def worker_multi_probe_lsh(params):
@@ -57,17 +57,16 @@ def worker_multi_probe_lsh(params):
         f'--w {w} ' \
         f'--t {t} ' \
         f'\"'
-    work(cmd)
+    return work(cmd)
 
 
 results = []
-# with ThreadPoolExecutor(max_workers=10) as executor:
-#     results_basic_lsh = executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
-# results.extend(results_basic_lsh)
 with ThreadPoolExecutor(max_workers=10) as executor:
+    results_basic_lsh = executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
     results_multi_probe_lsh = executor.map(
         worker_multi_probe_lsh, product(n_hash_table_list, n_compounds_list, w_list, t_list))
-results.extend(results_multi_probe_lsh)
+results.extend(list(results_basic_lsh))
+results.extend(list(results_multi_probe_lsh))
 
 result_df = pd.DataFrame.from_records(results)
 result_df.to_csv('outputs/results.csv', index=False)
