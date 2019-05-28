@@ -1,9 +1,7 @@
 import sys
 sys.path.append("..")
-#from lsh import BasicE2LSH
 import numpy as np
 from loguru import logger
-#import pygtries as tries
 from lsh.hash_family import E2Family
 import random
 import networkx as nx
@@ -83,8 +81,7 @@ class Btree(object):
             Node.add_lchild(node([hashcode, [term], depth], Node, isleaf=True))
         else:
             #print (Node.lchild.isleaf)
-            if len(Node.lchild.obj[1])>100:
-                logger.debug(f"The leaf has existed and the number if {len(Node.lchild.obj[1])}")
+            logger.info(f"The leaf has existed and the number if {len(Node.lchild.obj[1])}")
             Node.lchild.obj[1].append(term)
 
     def delete(self, hashcode, term):
@@ -159,7 +156,7 @@ class Btree(object):
 class LSHTree(object):
     def __init__(self, km):
         self.km=km
-        self.generator=E2Family(50, k=km)
+        self.generator=E2Family(50, k=km, w=1.0)
         self.func=self.generate_hashfunc()
         self.tree=Btree()
 
@@ -217,11 +214,12 @@ class LSHForest(object):
         [tree.delete_one(image) for tree in self.forest]
 
 
-    def query(self, q, c=2, m=1):  # query from hash table
+    def query(self, q, c=2, m=100):  # query from hash table
         descend=[tree.descend(q) for tree in self.forest]
         res=set([])
 
         x=max([item[1] for item in descend])
+        logger.info(f"The value of x is {x}")
         while (x>0 and (len(res)<c*self.l or len(res)<m)):
             for i in range(self.l):
                 if descend[i][1]==x:
