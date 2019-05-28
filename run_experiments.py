@@ -17,7 +17,7 @@ available_server_set = set(server_list)
 # t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 n_hash_table_list = [1, ]
 n_compounds_list = [20, ]
-w_list = [10, ]
+w_list = [1, ]
 t_list = [10, ]
 
 
@@ -27,9 +27,9 @@ def work(cmd):
     server = available_server_set.pop()
     cmd = f"ssh {server} {cmd}"
     logger.debug(f"command: {cmd}")
-    output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
+    output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode()
     # logger.debug(output)
-    ret = eval(output)
+    ret = eval(output.replace('nan', 'None'))
     # ret = {}
     available_server_set.add(server)
     logger.debug(f"ret: {ret}")
