@@ -31,7 +31,6 @@ def e2_ratio(q, labels, preds, max_k=100):
     q = np.expand_dims(q.copy(), 0)
     length = min(np.size(preds, 0), max_k)
     ratio_list = np.sort(e2(q, preds[:length])) / e2(q, labels[:length])
-    #assert np.max(ratio_list) >= 1.0
     return np.mean(ratio_list)
 
 
@@ -51,7 +50,6 @@ def lsh_evaluation(lsh: LSH, **kwargs):
     #lsh.delete_one(train_data[0])
     logger.info(f"error ratio: {np.mean(error_ratio_list)}")
     logger.remove(handler_id)
-    return ret
 
 
 @click.command()

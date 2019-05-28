@@ -1,5 +1,7 @@
+import copy
+from itertools import product
 from pathlib import Path
-
+import pandas as pd
 import click
 import numpy as np
 from loguru import logger
@@ -8,7 +10,7 @@ from config import n_dims, n_test_samples, n_train_samples
 from lsh import LSH, BasicE2LSH
 from lsh.multi_probe_lsh import MultiProbeE2LSH
 from utility import Timer
-from concurrent.futures import ProcessPoolExecutor
+from pathos.parallel import ParallelPool
 
 data_base_path = Path("./outputs")
 train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32, shape=(n_train_samples, n_dims))
@@ -90,17 +92,32 @@ def lsh_evaluation(lsh: LSH, **kwargs):
         'build_time': build_timer.elapsed_time,
         'search_time': search_timer.elapsed_time,
         'recall': recall,
+        'algorithm': lsh.__class__.__name__,
     }
     logger.info(ret)
     logger.remove(handler_id)
     return ret
 
 
-@click.command()
 def main():
-    n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
-    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=5, n_compounds=16, w=10.))
-    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=5, n_compounds=16, w=10.), t=1024)
+    result_list = []
+    try:
+        # n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+        n_hash_table_list = [1, 2]
+        n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
+        w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+        t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+        for params in product(n_hash_table_list, n_compounds_list, w_list):
+            result_list.append(lsh_evaluation(BasicE2LSH(
+                n_dims=n_dims, n_hash_table=params[0], n_compounds=params[1], w=params[2])))
+        for params in product(n_hash_table_list, n_compounds_list, w_list, t_list):
+            result_list.append(lsh_evaluation(MultiProbeE2LSH(
+                n_dims=n_dims, n_hash_table=params[0], n_compounds=params[1], w=params[2]), t=params[3]))
+    except KeyboardInterrupt as e:
+        logger.error(e)
+    finally:
+        result_df = pd.DataFrame.from_records(result_list)
+        result_df.to_csv(data_base_path / 'multi_probe_lsh.csv', index=False)
 
 
 if __name__ == '__main__':
