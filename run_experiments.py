@@ -21,19 +21,13 @@ t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 # t_list = [128, ]
 
 
-def worker_basic_lsh(params):
-    n_hash_table, n_compounds, w = params
-    while not available_server_set:
+def work(cmd):
+    while len(available_server_set) <= 0:
         time.sleep(1)
     server = available_server_set.pop()
-    cmd = f'ssh {server} \"cd {base_path}; source ~/.zshrc && ' \
-        f'python3 {base_path}/run_basic_lsh_evaluation.py ' \
-        f'--n-hash-table {n_hash_table} ' \
-        f'--n-compounds {n_compounds} ' \
-        f'--w {w} ' \
-        f'\"'
+    cmd = f"ssh {server} {cmd}"
     logger.debug(f"command: {cmd}")
-    output = subprocess.check_output(cmd, shell=True)
+    output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL)
     # logger.debug(output)
     ret = eval(output)
     # ret = {}
@@ -43,28 +37,33 @@ def worker_basic_lsh(params):
     return ret
 
 
-def worker_multi_probe_lsh(params):
-    n_hash_table, n_compounds, w, t = params
-    while not available_server_set:
-        time.sleep(1)
-    server = available_server_set.pop()
-    cmd = f'ssh {server} cd {base_path} && python3 {base_path}/run_multi_probe_lsh_evaluation.py ' \
+def worker_basic_lsh(params):
+    n_hash_table, n_compounds, w = params
+    cmd = f'\"cd {base_path}; source ~/.zshrc && ' \
+        f'python3 {base_path}/run_basic_lsh_evaluation.py ' \
         f'--n-hash-table {n_hash_table} ' \
         f'--n-compounds {n_compounds} ' \
         f'--w {w} ' \
-        f'--t {t} '
-    logger.debug(f"command: {cmd}")
-    ret = eval(subprocess.check_output(cmd, shell=True))
-    # ret = {}
-    available_server_set.add(server)
-    logger.debug(f"ret: {ret}")
-    return ret
+        f'\"'
+    work(cmd)
+
+
+def worker_multi_probe_lsh(params):
+    n_hash_table, n_compounds, w, t = params
+    cmd = f'\"cd {base_path}; source ~/.zshrc && ' \
+        f'python3 {base_path}/run_multi_probe_lsh_evaluation.py ' \
+        f'--n-hash-table {n_hash_table} ' \
+        f'--n-compounds {n_compounds} ' \
+        f'--w {w} ' \
+        f'--t {t} ' \
+        f'\"'
+    work(cmd)
 
 
 results = []
-with ThreadPoolExecutor(max_workers=10) as executor:
-    results_basic_lsh = executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
-results.extend(results_basic_lsh)
+# with ThreadPoolExecutor(max_workers=10) as executor:
+#     results_basic_lsh = executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
+# results.extend(results_basic_lsh)
 with ThreadPoolExecutor(max_workers=10) as executor:
     results_multi_probe_lsh = executor.map(
         worker_multi_probe_lsh, product(n_hash_table_list, n_compounds_list, w_list, t_list))
