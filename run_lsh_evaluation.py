@@ -7,6 +7,7 @@ import time
 from config import n_dims, n_test_samples, n_train_samples
 from lsh import LSH, BasicE2LSH
 from lsh.multi_probe_lsh import MultiProbeE2LSH
+from utility import Timer
 
 data_base_path = Path("./outputs")
 train_data = np.memmap(data_base_path / 'train_arr', mode='r', dtype=np.float32, shape=(n_train_samples, n_dims))
@@ -16,7 +17,7 @@ ground_truth = np.memmap(
 )
 
 
-def e2_ratio(q, labels, preds, max_k=20):
+def get_e2_ratio(q, labels, preds, max_k=20):
     """
     :param max_k: calc min(preds, max_k) for q
     :param q: the query vector in shape (d,)
@@ -32,31 +33,73 @@ def e2_ratio(q, labels, preds, max_k=20):
     return np.mean(ratio_list)
 
 
+def get_recall(q, labels, preds, max_k=20):
+    """
+    :param max_k: consider how many labels as ground truth
+    :param q: the query vector in shape (d,)
+    :param labels: label, in shape (k, d)
+    :param preds: predict, in shape (k, d)
+    :return:
+    """
+    eps = 1e-2
+    e2 = lambda x, y: np.sqrt(np.sum((x - y) ** 2, axis=-1))
+    q = np.expand_dims(q.copy(), 0)
+    preds_dis = e2(q, preds)
+    labels_dis = e2(q, labels)
+    preds = preds[np.argsort(preds_dis)]
+    i = 0
+    j = 0
+    tp_count = 0
+    while i < len(preds) and j < min(max_k, len(labels)):
+        if preds_dis[i] < labels_dis[j] - eps:
+            i += 1
+        elif preds_dis[i] > labels_dis[j] + eps:
+            j += 1
+        else:
+            i += 1
+            j += 1
+            tp_count += 1
+    return tp_count / min(max_k, len(labels))
+
+
 def lsh_evaluation(lsh: LSH, **kwargs):
-    handler_id = logger.add(data_base_path / 'logs' / f'{lsh}.log'.replace(' ', '_'))
-    logger.info(lsh)
-    logger.info(f"start add entries, train data shape: {np.shape(train_data)}")
-    tic = time.time()
-    lsh.add_batch(train_data[:60000])
-    toc = time.time()
-    logger.info(f"build hash table cost: {toc - tic}s")
-    logger.info(f"start evaluate")
-    error_ratio_list = []
-    for idx, test_sample in enumerate(test_data):
-        candidates = lsh.query(test_sample, **kwargs)
-        n_candidates = np.size(candidates, 0)
-        if n_candidates <= 0:
-            continue
-        labels = train_data[ground_truth[idx, :n_candidates]]
-        error_ratio_list.append(e2_ratio(test_sample, labels, candidates))
-    logger.info(f"error ratio: {np.mean(error_ratio_list)}")
+    with Timer() as total_timer:
+        handler_id = logger.add(data_base_path / 'logs' / f'{lsh}.log'.replace(' ', '_'))
+        logger.info(lsh)
+        logger.info(f"start add entries, train data shape: {np.shape(train_data)}")
+        with Timer() as build_timer:
+            lsh.add_batch(train_data[:60000])
+        logger.info(f"build hash table cost: {build_timer.elapsed_time:.4f}s")
+        logger.info(f"start evaluate")
+        error_ratio_list = []
+        recall_list = []
+        with Timer() as search_timer:
+            for idx, test_sample in enumerate(test_data):
+                candidates = lsh.query(test_sample, **kwargs)
+                if not len(candidates):
+                    continue
+                labels = train_data[ground_truth[idx, :]]
+                error_ratio_list.append(get_e2_ratio(test_sample, labels, candidates))
+                recall_list.append(get_recall(test_sample, labels, candidates, max_k=5))
+    error_ratio = np.mean(error_ratio_list)
+    recall = np.mean(recall_list)
+    ret = {
+        'total_time:': total_timer.elapsed_time,
+        'error_ratio': error_ratio,
+        'build_time': build_timer.elapsed_time,
+        'search_time': search_timer.elapsed_time,
+        'recall': recall,
+    }
+    logger.info(ret)
     logger.remove(handler_id)
+    return ret
 
 
 @click.command()
 def main():
-    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=10, n_compounds=20, w=10.))
-    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=5, n_compounds=20, w=10.), t=100)
+    n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=5, n_compounds=16, w=10.))
+    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=5, n_compounds=16, w=10.), t=1024)
 
 
 if __name__ == '__main__':
