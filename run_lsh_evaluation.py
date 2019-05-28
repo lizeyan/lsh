@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 import numpy as np
 from loguru import logger
-
+import time
 from config import n_dims, n_test_samples, n_train_samples
 from lsh import LSH, BasicE2LSH
 from lsh.multi_probe_lsh import MultiProbeE2LSH
@@ -27,7 +27,7 @@ def e2_ratio(q, labels, preds, max_k=20):
     e2 = lambda x, y: np.sqrt(np.sum((x - y) ** 2, axis=-1))
     q = np.expand_dims(q.copy(), 0)
     length = min(np.size(preds, 0), max_k)
-    ratio_list = np.sort(e2(q, preds[:length])) / e2(q, labels[:length])
+    ratio_list = np.sort(e2(q, preds))[:length] / e2(q, labels[:length])
     assert np.max(ratio_list) >= 1.0
     return np.mean(ratio_list)
 
@@ -36,7 +36,10 @@ def lsh_evaluation(lsh: LSH, **kwargs):
     handler_id = logger.add(data_base_path / 'logs' / f'{lsh}.log'.replace(' ', '_'))
     logger.info(lsh)
     logger.info(f"start add entries, train data shape: {np.shape(train_data)}")
+    tic = time.time()
     lsh.add_batch(train_data[:60000])
+    toc = time.time()
+    logger.info(f"build hash table cost: {toc - tic}s")
     logger.info(f"start evaluate")
     error_ratio_list = []
     for idx, test_sample in enumerate(test_data):
@@ -52,8 +55,8 @@ def lsh_evaluation(lsh: LSH, **kwargs):
 
 @click.command()
 def main():
-    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.))
-    # lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.), t=1)
+    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=20, w=10.))
+    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=44, n_compounds=20, w=10.), t=10)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 from typing import Callable, List, Dict
 import numpy as np
-
+from joblib import Parallel, delayed
+import numba
 from lsh import LSH
 from lsh.hash_family import E2Family
 
@@ -29,6 +30,9 @@ class HashTable:
 
 class BasicE2LSH(LSH):
     def add_batch(self, q_list):
+        # Parallel(n_jobs=4, require='sharedmem')(
+        #     delayed(lambda hash_table: hash_table.add_batch(q_list))(_) for _ in self.hash_tables
+        # )
         list(map(lambda hash_table: hash_table.add_batch(q_list), self.hash_tables))
 
     def __init__(self, n_dims: int, n_hash_table: int = 1, n_compounds: int = 1, w: float = 1.):
