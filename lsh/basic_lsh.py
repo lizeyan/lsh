@@ -39,10 +39,7 @@ class BasicE2LSH(LSH):
         self.hash_family = E2Family(n_dims=n_dims, k=n_compounds, w=w)
         self.hash_tables = [HashTable(self.hash_family.sample()) for _ in range(self.n_hash_table)]
 
-    def query(self, q):
-        """
-        :return:
-        """
+    def query(self, q, **kwargs):
         results = list(filter(lambda x: len(x) > 0, [hash_table.query(q) for hash_table in self.hash_tables]))
         if len(results) > 0:
             return np.unique(np.concatenate(results), axis=0)

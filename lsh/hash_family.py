@@ -21,7 +21,6 @@ class E2Family:
 
     def _hash_generator(self, a, b):
         def _hash(q):
-            # assert np.shape(q) == np.shape(a)[-1:], f'query should be in shape {np.shape(a)[-1:]}'
             _ret = np.floor_divide(np.tensordot(q, a, axes=[-1, -1]) + b, self.w).astype(np.int32)
             if np.ndim(q) == 1:
                 return tuple(_ret)
@@ -29,6 +28,18 @@ class E2Family:
                 return list(map(tuple, _ret))
             else:
                 raise RuntimeError(f"Unsupport query in shape {np.shape(q)}")
+
+        # for MultiProbeLSH
+        def _x_negative(q):
+            _f = np.tensordot(q, a, axes=[-1, -1]) + b
+            _ret = _f - np.floor_divide(np.tensordot(q, a, axes=[-1, -1]) + b, self.w).astype(np.int32) * self.w
+            if np.ndim(q) == 1:
+                return tuple(_ret)
+            elif np.ndim(q) == 2:
+                return list(map(tuple, _ret))
+            else:
+                raise RuntimeError(f"Unsupport query in shape {np.shape(q)}")
+        _hash.x_negative = _x_negative
 
         return _hash
 

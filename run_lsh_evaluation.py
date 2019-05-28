@@ -16,8 +16,9 @@ ground_truth = np.memmap(
 )
 
 
-def e2_ratio(q, labels, preds):
+def e2_ratio(q, labels, preds, max_k=20):
     """
+    :param max_k: calc min(preds, max_k) for q
     :param q: the query vector in shape (d,)
     :param labels: label, in shape (k, d)
     :param preds: predict, in shape (k, d)
@@ -25,7 +26,10 @@ def e2_ratio(q, labels, preds):
     """
     e2 = lambda x, y: np.sqrt(np.sum((x - y) ** 2, axis=-1))
     q = np.expand_dims(q.copy(), 0)
-    return np.mean(e2(q, preds) / e2(q, labels))
+    length = min(np.size(preds, 0), max_k)
+    ratio_list = np.sort(e2(q, preds[:length])) / e2(q, labels[:length])
+    assert np.max(ratio_list) >= 1.0
+    return np.mean(ratio_list)
 
 
 def lsh_evaluation(lsh: LSH, **kwargs):
@@ -38,7 +42,6 @@ def lsh_evaluation(lsh: LSH, **kwargs):
     for idx, test_sample in enumerate(test_data):
         candidates = lsh.query(test_sample, **kwargs)
         n_candidates = np.size(candidates, 0)
-        # TODO ?
         if n_candidates <= 0:
             continue
         labels = train_data[ground_truth[idx, :n_candidates]]
@@ -49,8 +52,8 @@ def lsh_evaluation(lsh: LSH, **kwargs):
 
 @click.command()
 def main():
-    # lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.))
-    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.), t=1)
+    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.))
+    # lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=44, n_compounds=10, w=10.), t=1)
 
 
 if __name__ == '__main__':
