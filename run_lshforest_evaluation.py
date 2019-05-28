@@ -17,7 +17,7 @@ ground_truth = np.memmap(
 )
 
 
-def e2_ratio(q, labels, preds):
+def e2_ratio(q, labels, preds, max_k=20):
     """
     :param q: the query vector in shape (d,)
     :param labels: label, in shape (k, d)
@@ -26,7 +26,9 @@ def e2_ratio(q, labels, preds):
     """
     e2 = lambda x, y: np.sqrt(np.sum((x - y) ** 2, axis=-1))
     q = np.expand_dims(q.copy(), 0)
-    return np.mean(e2(q, preds) / e2(q, labels))
+    length=min(np.size(preds, 0), max_k)
+    ratio_list=np.sort(e2(q, preds[:length]))/e2(q, labels[:length])
+    return np.mean(ratio_list)
 
 
 def lsh_evaluation(lsh: LSH, **kwargs):
