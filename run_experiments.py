@@ -26,15 +26,18 @@ def worker_basic_lsh(params):
     while not available_server_set:
         time.sleep(1)
     server = available_server_set.pop()
-    cmd = f'ssh {server} python3 {base_path}/run_basic_lsh_evaluation.py ' \
+    cmd = f'ssh {server} \"cd {base_path}; source ~/.zshrc ' \
+        f'python3 {base_path}/run_basic_lsh_evaluation.py ' \
         f'--n-hash-table {n_hash_table} ' \
         f'--n-compounds {n_compounds} ' \
-        f'--w {w} '
+        f'--w {w} ' \
+        f'\"'
     logger.debug(f"command: {cmd}")
     ret = eval(subprocess.check_output(cmd, shell=True))
     # ret = {}
     available_server_set.add(server)
     logger.debug(f"ret: {ret}")
+    logger.debug(f"release {server}")
     return ret
 
 
@@ -43,7 +46,7 @@ def worker_multi_probe_lsh(params):
     while not available_server_set:
         time.sleep(1)
     server = available_server_set.pop()
-    cmd = f'ssh {server} python3 {base_path}/run_multi_probe_lsh_evaluation.py ' \
+    cmd = f'ssh {server} cd {base_path} && python3 {base_path}/run_multi_probe_lsh_evaluation.py ' \
         f'--n-hash-table {n_hash_table} ' \
         f'--n-compounds {n_compounds} ' \
         f'--w {w} ' \
