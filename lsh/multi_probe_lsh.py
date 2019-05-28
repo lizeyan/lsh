@@ -7,7 +7,7 @@ from loguru import logger
 
 
 class MultiProbeE2LSH(BasicE2LSH):
-    def __init__(self, n_dims: int, n_hash_table: int = 1, n_compounds: int = 1, w: float = 1., max_t: int = 4096):
+    def __init__(self, n_dims: int, n_hash_table: int = 1, n_compounds: int = 1, w: float = 1., max_t: int = 4096*16):
         super().__init__(n_dims=n_dims, n_hash_table=n_hash_table, n_compounds=n_compounds, w=w)
         self.max_t = min(max_t, 4 ** self.n_compounds - 1)
 
