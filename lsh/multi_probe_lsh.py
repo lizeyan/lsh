@@ -48,12 +48,12 @@ class MultiProbeE2LSH(BasicE2LSH):
         basic_query = hash_table.h(q)
         results = []
         for perturbation in self.perturbation_sequence[:t]:
-            real_perturbation = map_indices[perturbation - 1]
+            real_perturbation = map_indices[perturbation - 1]  # [0, self.n_compounds)
             query = list(copy.copy(basic_query))
             for ele_perturb in real_perturbation:
                 sign = 2 * ele_perturb // self.n_compounds - 1
                 loc = ele_perturb % self.n_compounds
-                query[loc - 1] += sign
+                query[loc] += sign
             ret = hash_table.entries.get(tuple(query), [])
             if ret:
                 results.append(ret)

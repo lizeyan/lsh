@@ -55,8 +55,8 @@ def lsh_evaluation(lsh: LSH, **kwargs):
 
 @click.command()
 def main():
-    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=44, n_compounds=20, w=10.))
-    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=44, n_compounds=20, w=10.), t=10)
+    lsh_evaluation(BasicE2LSH(n_dims=50, n_hash_table=10, n_compounds=20, w=10.))
+    lsh_evaluation(MultiProbeE2LSH(n_dims=50, n_hash_table=5, n_compounds=20, w=10.), t=100)
 
 
 if __name__ == '__main__':
