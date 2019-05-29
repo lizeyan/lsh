@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 import threading
 from itertools import product
@@ -9,17 +11,17 @@ from loguru import logger
 import numpy as np
 import random
 
-
 base_path = '/home/lizytalk/Projects/lsh/'
 server_list = [f'cpu{i}' for i in range(1, 11)]
 server_avail = np.asarray([5 for _ in server_list])
 lock = threading.Lock()
 
-
 n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
 n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
 w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
 t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+
+
 # n_hash_table_list = [1, ]
 # n_compounds_list = [20, ]
 # w_list = [1, ]
@@ -97,14 +99,23 @@ def main():
                 worker_multi_probe_lsh,
                 sorted(product(n_hash_table_list, n_compounds_list, w_list, t_list), key=lambda x: random.random())
             )
+        # pass
     except Exception as e:
         logger.error(e)
     finally:
         result_df = pd.DataFrame.from_records(results)
         result_df.to_csv(f'outputs/basic_multi_probe/results/{timestamp}.csv', index=False)
+        for server in server_list:
+            os.system(
+                f"ssh {server} " + "\"" + r"kill \$(ps aux | grep '[p]ython3 /home/lizytalk' | awk '{print \$2}')" + "\""
+            )
         print(result_df)
 
 
 if __name__ == '__main__':
-    results = []
-    main()
+    os.setpgrp()  # create new process group, become its leader
+    try:
+        results = []
+        main()
+    finally:
+        os.killpg(0, signal.SIGKILL)  # kill all processes in my group
