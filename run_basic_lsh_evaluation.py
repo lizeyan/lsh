@@ -18,20 +18,24 @@ ground_truth = np.memmap(
 )
 
 
-def get_e2_ratio(q, labels, preds, max_k=20):
+def e2(x, y):
+    return np.sqrt(np.sum((x - y) ** 2, axis=-1))
+
+
+def get_e2_ratio(q, labels, preds, preds_dis, max_k=20):
     """
+    :param preds_dis: preds's distance to q
     :param max_k: calc min(preds, max_k) for q
     :param q: the query vector in shape (d,)
     :param labels: label, in shape (k, d)
     :param preds: predict, in shape (k, d)
     :return:
     """
-    e2 = lambda x, y: np.sqrt(np.sum((x - y) ** 2, axis=-1))
     q = np.expand_dims(q.copy(), 0)
     length = min(np.size(preds, 0), max_k)
-    ratio_list = np.sort(e2(q, preds))[:length] / e2(q, labels[:length])
-    assert np.max(ratio_list) >= 1.0
-    return np.mean(ratio_list)
+    ratio_list = preds_dis[:length] / e2(q, labels[:length])
+    assert np.nanmax(ratio_list) >= 1.0
+    return np.nanmean(ratio_list)
 
 
 def get_precision_recall(q, labels, preds, max_k=20):
@@ -39,13 +43,9 @@ def get_precision_recall(q, labels, preds, max_k=20):
     :param max_k: consider how many labels as ground truth
     :param q: the query vector in shape (d,)
     :param labels: label, in shape (k, d)
-    :param preds: predict, in shape (k, d)
+    :param preds: predict, in shape (k, d) in sorted order
     :return:
     """
-    e2 = lambda x, y: np.sqrt(np.sum((x - y) ** 2, axis=-1))
-    q = np.expand_dims(q.copy(), 0)
-    preds_dis = e2(q, preds)
-    preds = preds[np.argsort(preds_dis)]
     intersection = (set(map(tuple, preds)).intersection(set(map(tuple, labels[:max_k]))))
     return len(intersection) / len(preds), len(intersection) / min(max_k, len(labels))
 
@@ -69,19 +69,25 @@ def lsh_evaluation(lsh: LSH, **kwargs):
             for idx, test_sample in enumerate(test_data):
                 candidates = lsh.query(test_sample, **kwargs)
                 if not len(candidates):
-                    continue
-                labels = train_data[ground_truth[idx, :]]
-                error_ratio_list.append(get_e2_ratio(test_sample, labels, candidates, max_k=max_k))
-                _p, _r = get_precision_recall(test_sample, labels, candidates, max_k=max_k)
-                recall_list.append(_r)
-                precision_list.append(_p)
-                cn_list.append(len(candidates) / len(train_data))
-            error_ratio = np.mean(error_ratio_list)
-            recall = np.mean(recall_list)
-            precision = np.mean(precision_list)
-            cn = np.mean(cn_list)
+                    cn_list.append(0)
+                    precision_list.append(float('nan'))
+                    recall_list.append(0)
+                    error_ratio_list.append(float('nan'))
+                else:
+                    preds_dis = e2(test_sample, candidates)
+                    candidates = candidates[np.argsort(preds_dis)]
+                    labels = train_data[ground_truth[idx, :]]
+                    error_ratio_list.append(get_e2_ratio(test_sample, labels, candidates, preds_dis, max_k=max_k))
+                    _p, _r = get_precision_recall(test_sample, labels, candidates, max_k=max_k)
+                    recall_list.append(_r)
+                    precision_list.append(_p)
+                    cn_list.append(len(candidates) / len(train_data))
+            error_ratio = np.nanmean(error_ratio_list)
+            recall = np.nanmean(recall_list)
+            precision = np.nanmean(precision_list)
+            cn = np.nanmean(cn_list)
     ret = {
-        'total_time:': total_timer.elapsed_time,
+        'total_time': total_timer.elapsed_time,
         'error_ratio': error_ratio,
         'build_time': build_timer.elapsed_time,
         'search_time': search_timer.elapsed_time,
@@ -133,7 +139,7 @@ def main(n_hash_table, n_compounds, w):
 #     finally:
 #         result_df = pd.DataFrame.from_records(result_list)
 #         result_df.to_csv(data_base_path / f'multi_probe_lsh_{int(datetime.now().timestamp())}.csv', index=False)
-    # lsh_evaluation(BasicE2LSH(n_dims=n_dims, n_hash_table=16, n_compounds=1, w=0.5))
+# lsh_evaluation(BasicE2LSH(n_dims=n_dims, n_hash_table=16, n_compounds=1, w=0.5))
 
 
 if __name__ == '__main__':

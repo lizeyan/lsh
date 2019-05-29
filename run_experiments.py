@@ -1,40 +1,58 @@
 import subprocess
+import threading
 from itertools import product
 from concurrent.futures import ThreadPoolExecutor
 import time
+from datetime import datetime
 import pandas as pd
 from loguru import logger
+import numpy as np
 
 
 base_path = '/home/lizytalk/Projects/lsh/'
 server_list = [f'cpu{i}' for i in range(1, 11)]
-available_server_set = set(server_list)
+server_avail = np.asarray([3 for _ in server_list])
+lock = threading.Lock()
 
 
-# n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
-# n_compounds_list = [4, 8, 16, 32, 64]
-# w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
-# t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
-n_hash_table_list = [1, ]
-n_compounds_list = [20, ]
-w_list = [1, ]
-t_list = [10, ]
+n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+n_compounds_list = [4, 8, 16, 32, 64]
+w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+# n_hash_table_list = [1, ]
+# n_compounds_list = [20, ]
+# w_list = [1, ]
+# t_list = [10, ]
+
+
+def find_avail_server():
+    with lock:
+        if np.max(server_avail) <= 0:
+            return None
+        else:
+            idx = np.argmax(server_avail).item()
+            server_avail[idx] -= 1
+            return idx
 
 
 def work(cmd):
-    while len(available_server_set) <= 0:
-        time.sleep(1)
-    server = available_server_set.pop()
+    while True:
+        server_idx = find_avail_server()
+        if server_idx is not None:
+            break
+        else:
+            time.sleep(5)
+    server = server_list[server_idx]
     cmd = f"ssh {server} {cmd}"
     logger.debug(f"command: {cmd}")
     output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode()
     # logger.debug(output)
     ret = eval(output.replace('nan', 'None'))
     # ret = {}
-    available_server_set.add(server)
     logger.debug(f"ret: {ret}")
     logger.debug(f"release {server}")
-    return ret
+    server_avail[server_idx] += 1
+    results.append(ret)
 
 
 def worker_basic_lsh(params):
@@ -60,15 +78,18 @@ def worker_multi_probe_lsh(params):
     return work(cmd)
 
 
+timestamp = int(datetime.now().timestamp())
+logger.add(f'outputs/basic_multi_probe.{timestamp}.log')
 results = []
-with ThreadPoolExecutor(max_workers=10) as executor:
-    results_basic_lsh = executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
-    results_multi_probe_lsh = executor.map(
-        worker_multi_probe_lsh, product(n_hash_table_list, n_compounds_list, w_list, t_list))
-results.extend(list(results_basic_lsh))
-results.extend(list(results_multi_probe_lsh))
-
-result_df = pd.DataFrame.from_records(results)
-result_df.to_csv('outputs/results.csv', index=False)
-print(result_df)
+try:
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
+        executor.map(
+            worker_multi_probe_lsh, product(n_hash_table_list, n_compounds_list, w_list, t_list))
+except Exception as e:
+    logger.error(e)
+finally:
+    result_df = pd.DataFrame.from_records(results)
+    result_df.to_csv(f'outputs/results_{timestamp}.csv', index=False)
+    print(result_df)
 
