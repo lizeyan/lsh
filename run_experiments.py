@@ -11,7 +11,7 @@ import numpy as np
 
 base_path = '/home/lizytalk/Projects/lsh/'
 server_list = [f'cpu{i}' for i in range(1, 11)]
-server_avail = np.asarray([3 for _ in server_list])
+server_avail = np.asarray([6 for _ in server_list])
 lock = threading.Lock()
 
 
@@ -23,6 +23,7 @@ t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 # n_compounds_list = [20, ]
 # w_list = [1, ]
 # t_list = [10, ]
+
 
 
 def find_avail_server():
@@ -42,17 +43,21 @@ def work(cmd):
             break
         else:
             time.sleep(5)
-    server = server_list[server_idx]
-    cmd = f"ssh {server} {cmd}"
-    logger.debug(f"command: {cmd}")
-    output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode()
-    # logger.debug(output)
-    ret = eval(output.replace('nan', 'None'))
-    # ret = {}
-    logger.debug(f"ret: {ret}")
-    logger.debug(f"release {server}")
-    server_avail[server_idx] += 1
-    results.append(ret)
+    try:
+        server = server_list[server_idx]
+        cmd = f"ssh {server} {cmd}"
+        logger.debug(f"command: {cmd}")
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode()
+        # logger.debug(output)
+        ret = eval(output.replace('nan', 'None'))
+        # ret = {}
+        logger.debug(f"ret: {ret}")
+        logger.debug(f"release {server}")
+        results.append(ret)
+    except Exception as e:
+        logger.error(f"error when executing {cmd}, {e}")
+    finally:
+        server_avail[server_idx] += 1
 
 
 def worker_basic_lsh(params):
@@ -78,18 +83,22 @@ def worker_multi_probe_lsh(params):
     return work(cmd)
 
 
-timestamp = int(datetime.now().timestamp())
-logger.add(f'outputs/basic_multi_probe.{timestamp}.log')
-results = []
-try:
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
-        executor.map(
-            worker_multi_probe_lsh, product(n_hash_table_list, n_compounds_list, w_list, t_list))
-except Exception as e:
-    logger.error(e)
-finally:
-    result_df = pd.DataFrame.from_records(results)
-    result_df.to_csv(f'outputs/results_{timestamp}.csv', index=False)
-    print(result_df)
+def main():
+    timestamp = int(datetime.now().timestamp())
+    logger.add(f'outputs/basic_multi_probe/logs/{timestamp}.log')
+    try:
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            executor.map(worker_basic_lsh, product(n_hash_table_list, n_compounds_list, w_list))
+            executor.map(
+                worker_multi_probe_lsh, product(n_hash_table_list, n_compounds_list, w_list, t_list))
+    except Exception as e:
+        logger.error(e)
+    finally:
+        result_df = pd.DataFrame.from_records(results)
+        result_df.to_csv(f'outputs/basic_multi_probe/results/{timestamp}.csv', index=False)
+        print(result_df)
 
+
+if __name__ == '__main__':
+    results = []
+    main()
