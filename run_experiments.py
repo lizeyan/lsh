@@ -13,7 +13,7 @@ import random
 
 base_path = '/home/lizytalk/Projects/lsh/'
 server_list = [f'cpu{i}' for i in range(1, 11)]
-server_avail = np.asarray([5 for _ in server_list])
+server_avail = np.asarray([4 for _ in server_list])
 lock = threading.Lock()
 
 n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
@@ -57,8 +57,10 @@ def work(cmd):
         logger.debug(f"ret: {ret}")
         logger.debug(f"release {server}")
         results.append(ret)
+        return True
     except Exception as e:
         logger.error(f"error when executing {cmd}, {e}")
+        return False
     finally:
         server_avail[server_idx] += 1
 
@@ -71,7 +73,8 @@ def worker_basic_lsh(params):
         f'--n-compounds {n_compounds} ' \
         f'--w {w} ' \
         f'\"'
-    return work(cmd)
+    while not work(cmd):
+        time.sleep(60)
 
 
 def worker_multi_probe_lsh(params):
@@ -83,7 +86,8 @@ def worker_multi_probe_lsh(params):
         f'--w {w} ' \
         f'--t {t} ' \
         f'\"'
-    return work(cmd)
+    while not work(cmd):
+        time.sleep(60)
 
 
 def main():
