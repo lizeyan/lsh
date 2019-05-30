@@ -13,13 +13,21 @@ import random
 
 base_path = '/home/lizytalk/Projects/lsh/'
 server_list = [f'cpu{i}' for i in range(1, 11)]
-server_avail = np.asarray([4 for _ in server_list])
 lock = threading.Lock()
 
-n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+# low cost ones
+server_avail = np.asarray([5 for _ in server_list])
+n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128]
 n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
 w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
 t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+
+# high cost ones
+# server_avail = np.asarray([1 for _ in server_list])
+# n_hash_table_list = [256, 512]
+# n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
+# w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
+# t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 
 
 # n_hash_table_list = [1, ]

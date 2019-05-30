@@ -75,7 +75,9 @@ def lsh_evaluation(lsh: LSH, **kwargs):
                     error_ratio_list.append(float('nan'))
                 else:
                     preds_dis = e2(test_sample, candidates)
-                    candidates = candidates[np.argsort(preds_dis)]
+                    indices = np.argsort(preds_dis)
+                    preds_dis = preds_dis[indices]
+                    candidates = candidates[indices]
                     labels = train_data[ground_truth[idx, :]]
                     error_ratio_list.append(get_e2_ratio(test_sample, labels, candidates, preds_dis, max_k=max_k))
                     _p, _r = get_precision_recall(test_sample, labels, candidates, max_k=max_k)

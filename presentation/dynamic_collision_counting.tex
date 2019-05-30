@@ -1,1 +1,13 @@
-\subsection{Dynamic Conllision Counting}
+\subsection{Dynamic Collision Counting}
+\begin{frame}
+\frametitle{Using Dynamic Compound Hash}
+Traditional LSH scheme use L static compound hash functions to reduce false positives.
+But it also reduce recall. Many hash tables will be used to improve recall.
+~\\~\\
+
+The collision counting LSH~\cite{gan2012locality} uses only a set of single hash function.
+Only data points with large enough collision numbers will be considered as cR-NN candidates.
+~\\~\\
+
+In case of no data points returned, it uses virtual reranking to equivalently search a neighbor with radius $1, c, c^2, ...$.
+\end{frame}

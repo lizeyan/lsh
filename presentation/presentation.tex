@@ -1,5 +1,20 @@
 \documentclass{beamer}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{multirow}
 \usepackage{xcolor}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{cleveref}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[OT1]{fontenc}
+\usepackage{cite}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{placeins}
+
 \usetheme{Rochester}
 \usecolortheme{beaver}
 \AtBeginSection[]
@@ -7,6 +22,19 @@
   \begin{frame}
     \frametitle{Table of Contents}
     \tableofcontents[
+    currentsection,currentsubsection,
+    sectionstyle=show/shaded,
+    subsectionstyle=show/show/shaded,
+    subsubsectionstyle=show/show/show/shaded
+    ]
+  \end{frame}
+}
+\AtBeginSubsection[]
+{
+  \begin{frame}
+    \frametitle{Table of Contents}
+    \tableofcontents[
+    currentsection,currentsubsection,
     sectionstyle=show/shaded,
     subsectionstyle=show/show/shaded,
     subsubsectionstyle=show/show/show/shaded
@@ -37,4 +65,9 @@
 	\section{Review of LSH Search Scheme}
 	\input{multi_probe}
 	\input{dynamic_collision_counting}
+	
+	\begin{frame}[allowframebreaks]
+	\bibliographystyle{IEEEtran}
+	\bibliography{refs/refs.bib}
+	\end{frame}
 \end{document}
