@@ -16,8 +16,8 @@ server_list = [f'cpu{i}' for i in range(1, 11)]
 lock = threading.Lock()
 
 # low cost ones
-server_avail = np.asarray([5 for _ in server_list])
-n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128]
+server_avail = np.asarray([8 for _ in server_list])
+n_hash_table_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
 n_compounds_list = [1, 2, 4, 8, 16, 32, 64]
 w_list = [0.5, 1.0, 2.0, 4.0, 8.0, 16.0]
 t_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]

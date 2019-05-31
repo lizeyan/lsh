@@ -103,9 +103,9 @@ def lsh_evaluation(lsh: LSH, **kwargs):
 
 
 @click.command()
-@click.option('--n-hash-table', default=4)
-@click.option('--n-compounds', default=4)
-@click.option('--w', default=1.0)
+@click.option('--n-hash-table', default=16)
+@click.option('--n-compounds', default=8)
+@click.option('--w', default=8.0)
 def main(n_hash_table, n_compounds, w):
     ret = lsh_evaluation(BasicE2LSH(n_dims=n_dims, n_hash_table=n_hash_table, n_compounds=n_compounds, w=w))
     ret['n_hash_table'] = n_hash_table

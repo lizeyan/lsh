@@ -22,7 +22,8 @@ class MultiProbeE2LSH(BasicE2LSH):
             map(lambda hash_table: self.query_hash_table(q, hash_table, t), self.hash_tables))
         )
         if len(results) > 0:
-            return np.unique(np.concatenate(results), axis=0)
+            idx = np.unique(np.concatenate(results), axis=0)
+            return self.train_set[idx]
         else:
             return np.asarray([])
 
