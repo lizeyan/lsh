@@ -23,7 +23,7 @@ class node(object):
 
     def ldown(self, create=False):
         if self.isleaf:
-            raise ValueError("Leaf node do not have left child")
+            logger.error("Leaf node do not have left child")
         new=False
         if create: 
             if self.lchild is None:
@@ -41,7 +41,7 @@ class node(object):
                     newnode=node('1', self, self.lchild)
                     self.lchild.father=newnode
                     if not (self.rchild is None):
-                        raise ValueError("conflict")
+                        logger.error("conflict")
                     self.rchild=newnode
                     self.lchild=node('0', self)
                     new=True
@@ -50,7 +50,7 @@ class node(object):
 
     def rdown(self, create=False):
         if self.isleaf:
-            raise ValueError('Leaf node do not have right child')
+            logger.error('Leaf node do not have right child')
         new=False
         if create:
             if self.rchild is None:
@@ -60,15 +60,47 @@ class node(object):
 
     def add_lchild(self, Node):
         if self.isleaf:
-            raise ValueError("Leaf node cannot add child")
+            logger.error("Leaf node cannot add child")
         if not( self.lchild is None):
-            raise ValueError('lchild already exist')
+            logger.error('lchild already exist')
         self.lchild=Node
 
     def add_rchild(self, Node):
         if self.isleaf:
-            raise ValueError('Leaf node cannnot add child')
+            logger.error('Leaf node cannnot add child')
         self.rchild=Node
+
+    def insert(self, hashcode, term, depth):
+        if self.lchild is None:
+            if isinstance(term, list):
+                term=term
+            else:
+                term=[term]
+            newnode=node([hashcode, term, depth], self, isleaf=True)
+            self.lchild=newnode
+            return
+        if depth>=len(hashcode):
+            if not self.lchild.isleaf:
+                logger.error("Lchild is not leaf")
+            if isinstance(term, list):
+                self.lchild.obj[1].extend(term)
+            else:
+                self.lchild.obj[1].append(term)
+            return 
+        q=hashcode[depth]
+        if q=='0':
+            if self.lchild.isleaf:
+                newnode=node(q, self)
+                q=self.lchild.obj
+                self.lchild=newnode
+                self.insert(q[0], q[1], q[2])
+            self.lchild.insert(hashcode, term, depth+1)
+            return
+        if self.rchild is None:
+            newnode=node(q, self)
+            self.rchild=newnode
+        self.rchild.insert(hashcode, term, depth+1)
+        return
 
 class Btree(object):
     def __init__(self):
@@ -77,17 +109,7 @@ class Btree(object):
     def insert(self, hashcode, term):
         Node=self.root
         depth=0
-        for t in hashcode:
-            depth+=1
-            Node, isnew=(Node.ldown(True) if t=='0' else Node.rdown(True))
-            if isnew:
-                break
-        if Node.lchild is None:
-            Node.add_lchild(node([hashcode, [term], depth], Node, isleaf=True))
-        else:
-            #print (Node.lchild.isleaf)
-            #logger.info(f"The leaf has existed and the number if {len(Node.lchild.obj[1])}")
-            Node.lchild.obj[1].append(term)
+        Node.insert(hashcode, term, depth)
 
     def delete(self, hashcode, term):
         depth=0
@@ -140,6 +162,8 @@ class Btree(object):
                 newNode=Node.lchild
             elif t=='1':
                 newNode=Node.rchild
+            else:
+                logger.error(f'error value of obj {t}')
             if newNode is None:
                 return (Node, depth-1)
             Node=newNode
@@ -170,12 +194,12 @@ class LSHTree(object):
         hashcode=self.list2vec(term)
         return self.tree.descent(hashcode)
 
-    def add_batch(self, q_list):
+    def add_batch(self, q_list, q_list_num):
         vec=np.array([self.list2vec(item) for item in q_list])
-        q_list=np.array(q_list)[np.argsort(vec)]
-        vec=np.sort(vec)
+        #q_list=np.array(q_list)[np.argsort(vec)]
+        #vec=np.sort(vec)
         for item, index in zip(vec, range(len(vec))):
-            self._add_one(item, q_list[index])
+            self._add_one(item, q_list_num[index])
 
     def add_one(self, image):
         hashcode=self.list2vec(image)
@@ -211,9 +235,19 @@ class LSHForest(LSH):
         self.km=km ##the maximum length
         self.l=l ## the number of trees
         self.forest=[LSHTree(self.km) for _ in range(self.l)]
+        self.table=None
 
     def add_batch(self, q_list):   #build hash table
-        [tree.add_batch(q_list) for tree in self.forest]
+        if self.table is None:
+            begin=0
+            self.table=q_list
+        else:
+            begin=len(self.table)
+            self.table.extend(q_list)
+        q_list_num=[i for i in range(begin, len(self.table))]
+        #print (q_list)
+        [tree.add_batch(q_list, q_list_num) for tree in self.forest]
+        logger.info("BUILDING TABLE SUC")
 
     def add_one(self, image):
         [tree.add_one(image) for tree in self.forest]
@@ -222,31 +256,26 @@ class LSHForest(LSH):
         [tree.delete_one(image) for tree in self.forest]
 
 
-    def query(self, q, c=1, m=20):  # query from hash table
+    def query(self, q, c=2, m=20):  # query from hash table
         descend=[tree.descend(q) for tree in self.forest]
         res=[]
+        res_=[]
 
         x=max([item[1] for item in descend])
-        #logger.info(f"The value of x is {x}")
-        while (x>0 and (len(res)<c*self.l or len(res)<m)):
+        logger.info(f"The value of x is {x}")
+        while (x>0 and (len(res_)<c*self.l or len(res_)<m)):
             for i in range(self.l):
                 if descend[i][1]==x:
                     self.forest[i].descendants(descend[i][0], res)
                     descend[i]=[descend[i][0].up(), descend[i][1]-1]
             x-=1
-        res=list(res)
-        res_=[]
-        for Node in res:
-            res_.extend(Node.obj[1])
+            res_=[]
+            for Node in res:
+                res_.extend(Node.obj[1])
+            res_=list(set(res_))
+        res_=[self.table[item] for item in res_]
         res_=np.array(res_)
         logger.info(f"FINISH QUERY, the number of candidate is {len(res_)}")
-        index=res_-np.reshape(q, [1, -1])
-        index=index**2
-        index=index.sum(-1)
         
-        #print (np.sort(index))
-        index=np.argsort(index)[:m]
-        res_=res_[index]
-        #print (res_, q)
-        return res_
+        return res_#[self.table[item] for item in res]
 
