@@ -29,18 +29,18 @@
     ]
   \end{frame}
 }
-\AtBeginSubsection[]
-{
-  \begin{frame}
-    \frametitle{Table of Contents}
-    \tableofcontents[
-    currentsection,currentsubsection,
-    sectionstyle=show/shaded,
-    subsectionstyle=show/show/shaded,
-    subsubsectionstyle=show/show/show/shaded
-    ]
-  \end{frame}
-}
+%\AtBeginSubsection[]
+%{
+%  \begin{frame}
+%    \frametitle{Table of Contents}
+%    \tableofcontents[
+%    currentsection,currentsubsection,
+%    sectionstyle=show/shaded,
+%    subsectionstyle=show/show/shaded,
+%    subsubsectionstyle=show/show/show/shaded
+%    ]
+%  \end{frame}
+%}
 % Frame title count
 \newcounter{cont_frame}
 \makeatletter
@@ -62,10 +62,42 @@
 \title{LSH}
 \begin{document}
 	\maketitle
+	\section{Introduction}
+	\begin{frame}{Locality Sensitive Hashing}
+	\begin{block}{LSH Families}
+		A family $\mathcal{H}$ of functions from a domain $S$ to a range $U$ is called $(r, \epsilon, p_1, p_2)$-sensitive, with $r, \epsilon>0$, $p_1>p_2>0$, if for any $p, q\in S$, the following conditions hold:
+		\begin{itemize}
+			\item if $D(p, q)\leq r$, then $Pr_{\mathcal{H}}[h(p)=h(q)]\geq p_1$
+			\item if $D(p, 1)>r(1+\epsilon)$ then $Pr_{\mathcal{H}}[h(p)=h(q)]\leq p_2$
+		\end{itemize}
+	\end{block}
+	\begin{figure}
+		\includegraphics[width=2.5in]{figures/intro_lsh.png}
+	\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Properties of Good LSH}
+	\small
+		\begin{itemize}
+			\item \textbf{Accuracy}: $\frac{\#\ of\ True\ Near\ Neightbors}{\#\ of\ Retrieved\ Candidates}$ should be as large as possible.
+			\vspace{2ex}
+			\item\textbf{Efficient Queries}: \small{$\#\ of\ Retrived\ Candidates$} should be as small as possible.
+			\vspace{2ex}
+			\item \textbf{Efficient Maintenance}: A single scan to build tables.
+			\vspace{2ex}
+			\item \textbf{Domain Independence}: Work well on any data domain.
+			\vspace{2ex}
+			\item \textbf{Minimum Storage}: Storage consummption should be as little as possible.
+		\end{itemize}
+	\end{frame}
+
+
 	\section{Review of LSH Search Scheme}
+	\input{lsh_forest}
 	\input{multi_probe}
 	\input{dynamic_collision_counting}
 	
+	\section{Implementation and Results Analysis}
 	\begin{frame}[allowframebreaks]
 	\bibliographystyle{IEEEtran}
 	\bibliography{refs/refs.bib}
