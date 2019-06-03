@@ -1,14 +1,11 @@
 \begin{frame}
 \frametitle{Implementation}
 We choose several representative LSH schemes, implement them and compare their performance.
-\begin{multicols}{2}
 \begin{itemize}
 	\item Basic LSH
 	\item LSH Forest
 	\item Multi-ProbeLSH
-	\item Bayesian LSH
 \end{itemize}
-\end{multicols}
 
 \textbf{Dataset}. We use MNIST\footnote{http://yann.lecun.com/exdb/mnist/} to evaluate the algorithms. We choose 50 dimensions of the original $28\times28$ images with largest variances as ~\cite{gan2012locality} does. Ground truth are got by linear scan in the training set with Euclidean distance.
 \end{frame}
@@ -16,12 +13,12 @@ We choose several representative LSH schemes, implement them and compare their p
 \begin{frame}
 	\frametitle{Experiment Settings}
 	\begin{table}
-		\begin{tabular}{ccccc}
+		\begin{tabular}{cccc}
 			\hline
-			Algorithm & Basic & LSHForest & MultiProbe & Bayesian \\ \hline
-			\#compounds & 8 & 25 & 8 & \\\hline
-			$w$ & 8 & 1 & 8 & \\\hline
-			$T$ & - & - & 16 & - \\ \hline
+			Algorithm & Basic & LSHForest & MultiProbe  \\ \hline
+			\#compounds & 8 & 25 & 8 \\\hline
+			$w$ & 8 & 1 & 8 \\\hline
+			$T$ & - & - & 16 - \\ \hline
 		\end{tabular}
 	\end{table}
 \end{frame}

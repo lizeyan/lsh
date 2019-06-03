@@ -103,7 +103,7 @@ def lsh_evaluation(lsh: LSH, **kwargs):
 
 
 @click.command()
-@click.option('--n-hash-table', default=16)
+@click.option('--n-hash-table', default=1024)
 @click.option('--n-compounds', default=8)
 @click.option('--w', default=8.0)
 def main(n_hash_table, n_compounds, w):
