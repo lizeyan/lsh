@@ -1,1 +1,12 @@
 \section{Introduction}
+In past decades, locality sensitive hashing (LSH) has been widely proposed for similarity search in high-dimensional spaces, especially for content-based search of feature-rich data such as audio recordings, digital photos, digital videos and other sensor data \cite{lv2007multi}. Generally speaking, there are two ways to apply hashing to similarity search \cite{wang2014hashing}. The first one is indexing data iterms using hash tables, which is formed by storing the iterms with the same code in hash bucket. In detail, algorithms in this way regard the items lying the buckets corresponding to the codes of the query as the similarity candidates and then determine nearest neighbors by checking distance between the query and candidates. Most researches in this direction aim to design hash functions satisfying the locality sensitive property and to design efficient search schemes, such as Multi-probe LSH \cite{lv2007multi}, Entropy-based LSH \cite{panigrahy2006entropy} and query adaptative LSH \cite{jegou2008query}. The other way is to approximate the distance between instances by the one computed with hash code, which ranks the instances according to the distances computed using the short codes. Such algorithms include LSH forest \cite{bawa2005lsh} and dynamic collision counting based LSH \cite{gan2012locality}.
+
+A ideal LSH scheme for similarity search should satisfy following properties \cite{bawa2005lsh, lv2007multi}:
+
+\begin{itemize}
+	\item Accurate: $\frac{\#\ of\ True\ Near\ Neightbors}{\#\ of\ Retrieved\ Candidates}$ should be as large as possible.
+	\item {Efficient Queries}: The number of retrived candidates should be as small as possible to reduce I/O and computation costs.
+	\item {Efficient Maintenance}: The index should be built in a single scan of the dataset, and subsequent inserts and deletes of objects should be efficient.
+	\item  {Domain Independence}: The index scheme should adapt to any data domain and require no special tuning of parameters for each specific dataset.
+	\item  {Minimum Storage}: Storage consummption should be as little as possible, ideally linear in the data size.
+\end{itemize}
