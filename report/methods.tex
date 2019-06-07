@@ -15,7 +15,7 @@ Since the B+ tree is always accurate, returning exactly the query results, the a
 The main idea is to encode each data point with variable length hash label $g(p)=(h_1(p), ..., h_k(p))$, where $k$ is different for different $p$ and $k\leq k_m$. Then l prefix trees are constructed on the set of all labels, with each leaf corresponding to a point, and different trees with different hash function sets. In the query procedure, a query for the $m$ nearest neighbors of a point $q$ is answered by traversing the LSH Trees in two phases. In the top-down phase, the leaf $x$ having the largest prefix match with $q$'s label is found by descending each LSH Tree; in the second bottom-up phase, $M$ points from the LSH Forest are collect by moving up from level $x$ towards the root synchronously across all LSH Trees. These two phases are shown in Figure 1. The insertion can be done by simply top-down searching and the deletion top-down and removing the appropriate leaf node.
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=6in]{image/1.png}
+		\includegraphics[width=6in]{figures/1.png}
 		\caption{Top-down and bottom-up phase of LSH Forest query.}
 	\end{center}
 \end{figure}
