@@ -53,6 +53,7 @@ logger.debug(f"train dataset standard deviation: {total_std}")
 
 selected_positions = np.unravel_index(np.argsort(var, axis=None)[-1:-n_dims - 1:-1], np.shape(var))
 logger.debug(f"selected positions: {selected_positions}")
+np.save('selected_positions', selected_positions)
 del var
 
 # In[6]:
@@ -91,6 +92,10 @@ del original_test_dataset_arr
 
 # In[8]:
 
+
+# (n_test, 1, d)
+# (0, n_train, d)
+# (n_test, n_train)
 
 distances = np.sum(np.square(np.expand_dims(test_arr, 1) - np.expand_dims(train_arr, 0)), axis=-1)
 ground_truth = np.argsort(distances, axis=-1)

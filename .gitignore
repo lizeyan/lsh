@@ -2,6 +2,7 @@
 .idea/
 __pycache__/
 outputs/
+report.pdf
 presentation/presentation.pdf
 .ipynb_checkpoints/
 

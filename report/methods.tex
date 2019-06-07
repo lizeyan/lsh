@@ -1,4 +1,3 @@
-
 \section{Methods of LSH}
 \subsection{Entropy-based LSH}
 \cite{panigrahy2006entropy} proposed a method to hash several randomly chosen points in the neighborhood of the query point and showed that at least one of them will hash to the bucket containing its nearest neighbor. The number of randomly chosen points in the neighborhood of the query point $q$ required depends on the entropy of the hash value $h(p)$ of a random point $p$ at distance $r$ from $q$, given $q$ and the locality preserving hash function $h$ chosen randomly from the hash family.
@@ -16,7 +15,7 @@ Since the B+ tree is always accurate, returning exactly the query results, the a
 The main idea is to encode each data point with variable length hash label $g(p)=(h_1(p), ..., h_k(p))$, where $k$ is different for different $p$ and $k\leq k_m$. Then l prefix trees are constructed on the set of all labels, with each leaf corresponding to a point, and different trees with different hash function sets. In the query procedure, a query for the $m$ nearest neighbors of a point $q$ is answered by traversing the LSH Trees in two phases. In the top-down phase, the leaf $x$ having the largest prefix match with $q$'s label is found by descending each LSH Tree; in the second bottom-up phase, $M$ points from the LSH Forest are collect by moving up from level $x$ towards the root synchronously across all LSH Trees. These two phases are shown in Figure 1. The insertion can be done by simply top-down searching and the deletion top-down and removing the appropriate leaf node.
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=6in]{./image/1.png}
+		\includegraphics[width=6in]{image/1.png}
 		\caption{Top-down and bottom-up phase of LSH Forest query.}
 	\end{center}
 \end{figure}
@@ -30,3 +29,6 @@ This work \cite{jegou2008query} using $E_8$ lattices as hash functions instead o
 A lattice is a discrete subset of $R^d$ defined by a set of vectors of the form $\{x=u_1a_1+...+u_da_d|u_1, ..., u_d\in Z\}$. The $E_8$ lattice can be defined based on another 8-dimensional lattice, the $D_8$ lattice, which is the set of point of $Z^8$ whose sum is even, e.g. $(1,1,1,1,1,1,1,1)\in D_8$. Then $E_8$ lattice is defined as:
 $$E_8=D_8\cup (D_8+\frac{1}{2})$$
 The author argues that the relevance of the hash function used in LSH is the lower the better. Based on the properties of $E_8$ lattice, the hash functions are defined as $$h_i(x)=E_8(\frac{x_{i,8}-b_i}{w})$$ The detailed algorithm of QA-LSH is exactly the same as the original LSH algorithm, except the hash function family is defined based on $E_8$ lattice, instead of randomly projection. The results indicate that the QA-LSH achieve a higher proportion of nearest neighbors correctly found compared with traditional LSH methods. 
+
+\input{multi_probe_lsh}
+\input{dynamic_collision_count}
