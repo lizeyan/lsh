@@ -1,4 +1,32 @@
+
 \section{Methods of LSH}
 \subsection{Entropy-based LSH}
-\subsection{Adaptive LSH}
-\subsection{LSH Forest}
+\cite{panigrahy2006entropy} proposed a method to hash several randomly chosen points in the neighborhood of the query point and showed taht at least one of them will hash to the bucket containing its nearest neighbor. The number of randomly chosen points in the neighborhood of the query point q required depends on the entropy of the hash value $h(p)$ of a random point $p$ at distance $r$ from $q$, given $q$ and the locality preserving hash function $h$ chosen randomly from the hash family.
+
+More detailly, let $I(X)$ donate the information-entropy of a discrete random variable $X$. For example, if $X$ takes $N$ possible values with probabilities $w_1, w_2, ..., w_N$, then $I(X)=I(w_1, w_2, ..., w_N)=\sum -w_i\log w_i$. Define $B(p, r)$ as the sphere of radius $r$ centered at $p$. The proposed method tries to retrieve $c$-approximate nerest neighbors of a query point $q$ when giving a distance $r$. Donate $M=I(h(p)|q, h)$, where $p$ is a random point in $B(q, r)$, and $g$ as an upper bound on the probability that two points that are at least distance $cr$ apart will hash to the same bucket, then the algorithm is:
+\begin{itemize}
+	\item \textbf{Constraction of hash table}: pick $k=\frac{\log n}{\log (1/g)}$ random hash functions $h_1, h_2, ..., h_k$. For each point $p$ in the database compute $H(p)=(h_1(p), h_2(p), ..., h_k(p))$ and store $p$ in a table at location $H(p)$. \textit{polylogn} is used to construct hash tables.
+	\item \textbf{Search}: Given $q$ and $r$, pick $O(n^\rho)$ random points $v$ from $B(q, r)$, where $\rho=\frac{M}{\log(1/g)}$, and search in the buckets $H(v)$.
+\end{itemize}
+
+The author illustrated that with such a algorithm, the time complexity to find the approximate nearest neighbor is $O(d+n^\rho)$ and the space complexity is near linear.
+\section{LSH forest}
+Since the B+ tree is alwayse accurate, returing exactly the query results, the author try to combine LSH and B+ tree together to improve accuracy and effeciency on a dynamic set of objects \cite{bawa2005lsh}. The paper aims to design an index structure that enables efficient $\epsilon$-approximate nearest-neighbor queries, efficient building of the index, efficient insertion and deletion of points, and complete domain independence, all while ensuring minimal use of storage. The proposed methods works for any choise of distance function $D$ for which there is corresponding LSH family.
+
+The main idea is to encode each data point with variable length hash label $g(p)=(h_1(p), ..., h_k(p))$, where $k$ is different for different $p$ and $k\leq k_m$. Then l prefix trees are constructed on the set of all labels, with each leaf corresponding to a point, and different trees with different hash function sets. In the query procedure, a query for the $m$ nearest neighbors of a point $q$ is answered by traversing the LSH Trees in two phases. In the top-down phase, the leaf $x$ having the largest prefix match with $q$'s label is found by descending each LSH Tree; in the second bottom-up phase, $M$ points from the LSH Forest are collect by moving up from level $x$ towards the root synchronously across all LSH Trees. These two phases are shown in Figure 1. The insertion can be done by simply top-down searching and the deletion top-down and removing the appropriate leaf node.
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=6in]{./image/1.png}
+		\caption{Top-down and bottom-up phase of LSH Forest query.}
+	\end{center}
+\end{figure}
+
+The theoretical analysis reveals that the LSH Forest is able to return $\epsilon$-approxiamte neighbors of a query $q$ with a non-zero probalility greater than a constant $C$, as long as the distance from $q$ to its neighbor is in the range $(a,b)$, where the range $(a,b)$ is the definition domain of hash family $H$. 
+
+The author also introduced ways to implemente this algorithm in main-memory and disk. In main-memory implementation, a long chain of logical internal nodes is compressed into just one node that stores the path to it from the previous node to improve storage space. In Disk-based implementation, in order to minimize the numebr of disk accesses required to navigate down the tree for a query, the Prefix B-Trees is considered as the data structure to constrate the LSH forest. The results on peer-to-peer task showing that LSH Forest exhibits higher effenciency than other methods, with hger average similarity and lower mean relative error in a dynamic setting.
+\section{Adaptative LSH}
+This work \cite{jegou2008query} using $E_8$ lattices as hash functions instead of random projections to balance the trade-off between retrieval accuracy and complexity.
+
+A lattice is a discrete subset of $R^d$ defined by a set of vectors of the form $\{x=u_1a_1+...+u_da_d|u_1, ..., u_d\in Z\}$. The $E_8$ lattice can be defined based on another 8-dimensional lattice, the $D_8$ lattice, which is the set of point of $Z^8$ whose sum is even, e.g. $(1,1,1,1,1,1,1,1)\in D_8$. Then $E_8$ lattice is defined as:
+$$E_8=D_8\cup (D_8+\frac{1}{2})$$
+The author argue that the relevance of the hash function used in LSH are the lower the better. Based on the properties of $E_8$ lattice, the hash functions is defined as $$h_i(x)=E_8(\frac{x_{i,8}-b_i}{w})$$ The detailed algorithm of QA-LSH is exactly the same as the original LSH algorithm, except the hash funtion family is defined based on $E_8$ lattice, instead of randomly projection. The results indicate that the QA-LSH achieve higher proportion of nearest neighbors correctly found compared with tradictional LSH methods. 
