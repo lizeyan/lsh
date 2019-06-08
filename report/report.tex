@@ -1,30 +1,19 @@
-\documentclass{article}
+\documentclass{IEEEtran}
 
-% if you need to pass options to natbib, use, e.g.:
-%     \PassOptionsToPackage{numbers, compress}{natbib}
-% before loading neurips_2018
-
-% ready for submission
-% \usepackage{neurips_2018}
-
-% to compile a preprint version, e.g., for submission to arXiv, add add the
-% [preprint] option:
-\usepackage[preprint,nonatbib]{nips_2018}
-
-% to compile a camera-ready version, add the [final] option, e.g.:
-%     \usepackage[final]{neurips_2018}
-
-% to avoid loading the natbib package, add option nonatbib:
-%     \usepackage[nonatbib]{neurips_2018}
-
-\usepackage[utf8]{inputenc} % allow utf-8 input
-\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
-\usepackage{hyperref}       % hyperlinks
-\usepackage{url}            % simple URL typesetting
-\usepackage{booktabs}       % professional-quality tables
-\usepackage{amsfonts}       % blackboard math symbols
-\usepackage{nicefrac}       % compact symbols for 1/2, etc.
-\usepackage{microtype}      % microtypography
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{cite}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage{multicol}
 \usepackage{cleveref}
 
 \crefformat{equation}{(#1)}
@@ -36,53 +25,28 @@
 \crefformat{table}{#2Table~#1#3}
 \usepackage{graphicx}
 
-\title{A Survey of LSH for Similarity Search}
+\setlength\floatsep{1em plus 1pt minus 3pt}
+\setlength\textfloatsep{1em plus 1pt minus 3pt}
+\setlength\intextsep{1em plus 1pt minus 3 pt}
 
-% The \author macro works with any number of authors. There are two commands
-% used to separate the names and addresses of multiple authors: \And and \AND.
-%
-% Using \And between authors leaves it to LaTeX to determine where to break the
-% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
-% authors names on the first line, and the last on the second line, try using
-% \AND instead of \And before the third author name.
-
-\author{%
-  Zeyan Li 2018310816
-  \And
-  Chencheng Xu 2018310851
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \AND
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-}
 
 \begin{document}
-% \nipsfinalcopy is no longer used
-
+\title{A Survey of LSH for Similarity Search}
+\author{
+\IEEEauthorblockN{Zeyan Li}
+\IEEEauthorblockA{2018310816} \and
+\IEEEauthorblockN{ChenCheng Xu}
+\IEEEauthorblockA{2018310851}
+}
 \maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
 
 \begin{abstract}
-  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
-  both the left- and right-hand margins. Use 10~point type, with a vertical
-  spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
-  bold, and in point size 12. Two line spaces precede the abstract. The abstract
-  must be limited to one paragraph.
+  LSH is widely used in similarity search.
+  We review some LSH schemes.
+  We also implement some of them and compare their performance with MNIST dataset.
+  We found that multi-probe LSH significantly reduce the number of hash table needed but requires more search time. LSH forest suffers from long build time.
 \end{abstract}
 
 \input{introduction}
@@ -90,6 +54,7 @@
 \input{evaluation}
 \input{conclusion}
 
+\clearpage
 \bibliographystyle{IEEEtran}
 \bibliography{refs/refs.bib}
 \end{document}

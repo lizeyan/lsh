@@ -1,1 +1,21 @@
 \subsection{Dynamic Collision Counting LSH}
+
+Traditional LSH schemes usually use static compound hash function to reduce false positives.
+However, the static compound hash functions also reduce recall, and many hash tables have to be used to improve recall.
+
+C2LSH~\cite{gan2012locality} uses dynamic compound hash function rather than a static one.
+C2LSH firstly randomly chooses a set of $m$ LSDH functions with appropriately small interval $W$, which form a function base $\mathcal{B}$.
+Only data objects with large enough collision counts need to have their distances computed.
+A data object is called frequent if its collision number \#collision(o) is greater than or equal to a pre-specified collision threshold $l$.
+
+C2LSH firstly calculate the buckets that $q$ falls in by $h_i(q), i=1,2,...,m$, and find the objects collides with $q$.
+
+Then we compute \#collides(o) for every $o$ and hence identify the set $C$ of all frequent objects. Then we compute $max(\#C, \beta n)$ frequent members of C. $n$ is the the cardinality of the database.
+The collision threshold is defined as $l=\alpha m$.
+These two properties should hold to ensure C2LSH correct:
+\begin{itemize}
+	\item $\mathcal{P}_1$: If there exists a data object o, s.t. $o\in B(q, R)$, then o's collision number is at least l. 
+	\item $\mathcal{P}_2$: The total number of false positives is less than $\beta n$.
+\end{itemize}
+
+In case of no data points returned, it uses virtual reranking to equivalently search a neighbor with radius $1, c, c^2, ...$.

@@ -25,6 +25,22 @@ Step-wise probing just consider all coordinates to be equally likely.
 However, according the properties LSH, some perturbations are more likely than others.
 
 We consider this hash function: $h(q)=\lfloor\frac{a\cdot q + b}{w}\rfloor$, where $w$ is a fixed hyper-parameter, $a$ is drawn from standard Gaussian, and $b$ is uniformly drawn from $[0, w)$.
-For two objects $$
+For two objects $p, q$, $f(p) - f(q)$ follows Gaussian Distribution, where $f(q){=}a\cdot q {+} b$.
+Therefore $P(h(p)=h(q)+\Delta)\approx C \exp(\sum_{i=1}^{M} x_i(\delta_i)^2)$, where $x_i(\delta_i)$ is the distance between q's projection and the boundary, like \cref{fig:x_i} shows.
+
+\begin{figure}[hbt]
+\centering
+  \includegraphics[width=\columnwidth]{figures/multi_probe_nn.png}
+  \caption{$x_i(\delta)$}
+  \label{fig:x_i}
+\end{figure}
+
+In order to find the probing sequence with smallest scores (defined as $score(\Delta)=\sum_{i=1}^{M}x_i(\delta_i)^2$), firstly we need to sort all $2M$ $x_i(\delta_i)$, then we use a heap to generate the probing sequence.
 
 \subsubsection{Optimized Probing Sequence}
+
+One of the drawback of query-based probing sequence is that it needs generating probing sequence for each query.
+However, we can use an approximation to precompute it.
+We denote the $j$-th elements in sorted $x_i(\delta_i)$ array  as $z_j$, then $z_j$ and $z_j^2$'s expectation is known and independent of query $q$.
+Specifically speaking, $E[z_j]{=}\frac{j}{2(M+1)}W, E[z_j^2]{=}\frac{j(j+1)}{4(M+1)(M+2)}W^2$.
+We use $\mathbb{E}[z_j^2]$ to replace $z_j^2$, then we only need to sort all $x_i(\delta_i)$ for each query.
