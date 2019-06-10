@@ -1,5 +1,5 @@
 \section{Methods of LSH}
-
+In this section, we will introduce several LSH schemes: entropy-based LSH, LSH forest, adaptative LSH, multi-probe LSH and dynamic collision counting LSH.
 
 \subsection{Entropy-based LSH}
 \cite{panigrahy2006entropy} proposed a method to hash several randomly chosen points in the neighborhood of the query point and showed that at least one of them will hash to the bucket containing its nearest neighbor. The number of randomly chosen points in the neighborhood of the query point $q$ required depends on the entropy of the hash value $h(p)$ of a random point $p$ at distance $r$ from $q$, given $q$ and the locality preserving hash function $h$ chosen randomly from the hash family.
