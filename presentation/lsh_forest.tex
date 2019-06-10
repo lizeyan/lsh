@@ -1,18 +1,18 @@
 \subsection{Entropy-based search}
 \begin{frame}
-\frametitle{Entropy-based search}
+\frametitle{Entropy-based search\cite{panigrahy2006entropy}}
 \small
 \begin{itemize}
 	\item Use one or a few hash table and hash several randomly chosen points in the neighborhood to reduce time and space complexity
 	\vspace{2ex}
-	\item  \textbf{Constraction of hash table}: pick $k=\frac{\log n}{\log (1/g)}$ random hash functions $h_1, h_2, ..., h_k$. For each point $p$ in the database compute $H(p)=(h_1(p), h_2(p), ..., h_k(p))$ and store $p$ in a table at location $H(p)$. \textit{polylogn} is used to construct hash tables.
+	\item  \textbf{Construction of hash table}: pick $k=\frac{\log n}{\log (1/g)}$ random hash functions $h_1, h_2, ..., h_k$. For each point $p$ in the database compute $H(p)=(h_1(p), h_2(p), ..., h_k(p))$ (\alert{after random rotations and shifts for each hash function}) and store $p$ in a table at location $H(p)$. \textit{polylogn} is used to construct hash tables.
 	\vspace{2ex}
 	\item \textbf{Search}: Given $q$ and $r$, pick $O(n^\rho)$ random points $v$ from $B(q, r)$, where $\rho=\frac{M}{\log(1/g)}$, and search in the buckets $H(v)$.
 \end{itemize}
 \end{frame}
 \subsection{Adaptative LSH}
 \begin{frame}
-\frametitle{Adaptative LSH}
+\frametitle{Adaptative LSH\cite{jegou2008query}}
 \small
 \begin{itemize}
 	\item Based on the idea that the relevance of the hash function used in LSH are the lower the better
@@ -28,9 +28,9 @@
 
 \begin{frame}
 \small
-	\frametitle{Basic Idea of LSH Forest}
+	\frametitle{Basic Idea of LSH Forest\cite{bawa2005lsh}}
 	\begin{itemize}
-		\item $B+$ tree is alwayse accurate
+		\item $B+$ tree is always accurate
 		\vspace{2ex}
 		\item Variance number of hash functions for different queries
 		\vspace{2ex}

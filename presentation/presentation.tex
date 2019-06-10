@@ -60,7 +60,8 @@
 \hspace{1cm}\insertframenumber{}/\inserttotalframenumber}
 
 
-\title{LSH}
+\title{Review and Implementation of Local Sensitive Hashing}
+\author{Zeyan Li, Chencheng Xu}
 \begin{document}
 	\maketitle
 	\section{Introduction}
@@ -69,7 +70,7 @@
 		A family $\mathcal{H}$ of functions from a domain $S$ to a range $U$ is called $(r, \epsilon, p_1, p_2)$-sensitive, with $r, \epsilon>0$, $p_1>p_2>0$, if for any $p, q\in S$, the following conditions hold:
 		\begin{itemize}
 			\item if $D(p, q)\leq r$, then $Pr_{\mathcal{H}}[h(p)=h(q)]\geq p_1$
-			\item if $D(p, 1)>r(1+\epsilon)$ then $Pr_{\mathcal{H}}[h(p)=h(q)]\leq p_2$
+			\item if $D(p, q)>r(1+\epsilon)$ then $Pr_{\mathcal{H}}[h(p)=h(q)]\leq p_2$
 		\end{itemize}
 	\end{block}
 	\begin{figure}
@@ -102,6 +103,7 @@
 	\input{implementation}
 	\begin{frame}[allowframebreaks]
 	\bibliographystyle{IEEEtran}
+	\tiny
 	\bibliography{refs/refs.bib}
 	\end{frame}
 	
